@@ -1,0 +1,601 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StayEase Hotel Booking</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f6fb;color:#18324b}
+header{background:white;padding:16px 4%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;box-shadow:0 2px 8px #ddd}
+header h1{color:#0875c9;margin:0}
+nav{display:flex;flex-wrap:wrap;gap:5px}
+button{border:0;border-radius:6px;padding:10px 13px;background:#0875c9;color:white;cursor:pointer;margin:3px}
+button:hover{background:#075797}
+input,textarea{width:100%;padding:11px;margin:6px 0 12px;border:1px solid #ccd6e0;border-radius:6px}
+label{font-size:14px;font-weight:bold}
+.hero{padding:45px 5%;color:white;background:linear-gradient(90deg,#073b65dd,#073b6533),url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600') center/cover}
+.hero h2{font-size:35px;margin:0 0 10px}
+main{max-width:1250px;margin:auto;padding:20px}
+section{background:white;padding:20px;margin-bottom:20px;border-radius:10px;box-shadow:0 2px 10px #18324b12}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.card{border:1px solid #dbe4ee;border-radius:9px;overflow:hidden;background:white}
+.card img{width:100%;height:175px;object-fit:cover}
+.content{padding:13px}
+.price{color:#13804a;font-weight:bold;font-size:20px}
+.muted{color:#64748b;font-size:13px}
+.hidden{display:none}
+.layout{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+iframe{width:100%;height:350px;border:0;border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:600px}
+td,th{border:1px solid #ddd;padding:10px;text-align:left}
+th{background:#e8f3fc}
+.tablewrap{overflow-x:auto}
+footer{background:#102e49;color:white;padding:25px;text-align:center}
+a{color:#0875c9}
+@media(max-width:750px){.layout{grid-template-columns:1fr}.hero h2{font-size:27px}}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🏨 StayEase</h1>
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('hotels')">Hotels</button>
+<button onclick="show('roomsSection')">Rooms</button>
+<button onclick="show('myBookings')">My Bookings</button>
+<button onclick="show('profile')">My Profile</button>
+<button onclick="show('admin')">Admin</button>
+<button onclick="show('information')">Hotel Info</button>
+</nav>
+</header>
+
+<div class="hero">
+<h2>Find Your Perfect Stay</h2>
+<p>Discover hotels, explore nearby locations and book your room.</p>
+<button onclick="show('hotels')">Explore Hotels</button>
+</div>
+
+<main>
+
+<section id="home">
+<h2>Search Hotels and Rooms</h2>
+<div class="grid">
+<div>
+<label>Destination / Hotel Name</label>
+<input id="destination" placeholder="Hyderabad, Chennai, Goa...">
+</div>
+<div>
+<label>Check-in</label>
+<input type="date" id="checkin">
+</div>
+<div>
+<label>Check-out</label>
+<input type="date" id="checkout">
+</div>
+<div>
+<label>Number of Guests</label>
+<input type="number" id="guests" min="1" value="1">
+</div>
+<div>
+<label>Maximum Price Per Night (₹)</label>
+<input type="number" id="maxPrice" min="0" placeholder="Any price">
+</div>
+</div>
+<button onclick="searchHotels()">🔎 Search Rooms</button>
+<button onclick="detectCurrentLocation()">📍 Detect My Current Location</button>
+<p id="message"></p>
+<p id="currentLocation">Your current location has not been detected.</p>
+</section>
+
+<div class="layout">
+<div>
+<section id="hotels">
+<h2>Featured Hotels</h2>
+<p class="muted">Sample hotel listings for demonstration. Verify actual hotel details before booking.</p>
+<div id="hotelList" class="grid"></div>
+</section>
+
+<section id="roomsSection">
+<h2>Room Types</h2>
+<div id="roomList" class="grid"></div>
+</section>
+</div>
+
+<div>
+<section>
+<h2>Google Maps</h2>
+<p class="muted">View your current location or search for a hotel.</p>
+<div id="map">
+<iframe title="Hotel map" loading="lazy" src="https://maps.google.com/maps?q=hotels%20in%20Hyderabad&z=11&output=embed"></iframe>
+</div>
+<button onclick="openGoogleMaps()">Open Google Maps</button>
+<button onclick="openNearbyPlaces()">Nearby Attractions</button>
+</section>
+</div>
+</div>
+
+<section id="register" class="hidden">
+<h2>User Registration</h2>
+<form id="registerForm">
+<label>Full Name</label><input id="name" required>
+<label>Email Address</label><input id="email" type="email" required>
+<label>Phone Number</label><input id="phone" required>
+<button type="submit">Save Profile</button>
+</form>
+</section>
+
+<section id="profile" class="hidden">
+<h2>My Profile</h2>
+<div id="profileDetails"></div>
+<button onclick="show('register')">Register / Edit Profile</button>
+</section>
+
+<section id="bookingFormSection" class="hidden">
+<h2>Room Booking</h2>
+<form id="bookingForm">
+<input id="bookRoomId" type="hidden">
+<label>Hotel</label><input id="bookHotel" readonly>
+<label>Room Type</label><input id="bookRoom" readonly>
+<label>Full Name</label><input id="bookName" required>
+<label>Email Address</label><input id="bookEmail" type="email" required>
+<label>Phone Number</label><input id="bookPhone" required>
+<label>Check-in</label><input type="date" id="bookIn" required>
+<label>Check-out</label><input type="date" id="bookOut" required>
+<label>Guests</label><input type="number" id="bookGuests" min="1" value="1" required>
+<button type="submit">Confirm Booking</button>
+</form>
+<p class="muted">Demo only: no real payment or confirmation email is sent.</p>
+</section>
+
+<section id="myBookings" class="hidden">
+<h2>My Booking History</h2>
+<input id="historyEmail" type="email" placeholder="Enter registered email">
+<button onclick="displayBookings()">View Bookings</button>
+<div id="bookingHistory"></div>
+</section>
+
+<section id="admin" class="hidden">
+<h2>Admin Panel</h2>
+<h3>Add or Update a Room</h3>
+<form id="roomForm">
+<input id="editRoomId" type="hidden">
+<label>Hotel Name</label><input id="adminHotel" required>
+<label>City / Destination</label><input id="adminCity" required>
+<label>Hotel Address</label><input id="adminAddress" required>
+<label>Room Type</label><input id="adminRoom" required>
+<label>Price Per Night (₹)</label><input id="adminPrice" type="number" min="1" required>
+<label>Total Rooms</label><input id="adminQuantity" type="number" min="0" required>
+<label>Room Picture URL</label><input id="adminImage" placeholder="https://example.com/room.jpg">
+<label>Amenities</label><input id="adminAmenities" placeholder="Wi-Fi, AC, TV">
+<button type="submit">Add / Update Room</button>
+</form>
+
+<h3>Room Listings</h3>
+<div id="adminList" class="tablewrap"></div>
+<h3>All Bookings</h3>
+<div id="adminBookingList" class="tablewrap"></div>
+
+<h3>Website Information</h3>
+<label>About Us</label><textarea id="aboutText"></textarea>
+<label>Contact Us</label><textarea id="contactText"></textarea>
+<label>Customer Service FAQ</label><textarea id="faqText"></textarea>
+<label>Local Travel Guide</label><textarea id="travelText"></textarea>
+<label>Privacy Policy</label><textarea id="privacyText"></textarea>
+<button onclick="saveInformation()">Save Information</button>
+</section>
+
+<section id="information" class="hidden">
+<h2>About Us</h2><p id="aboutDisplay"></p>
+<h2>Contact Us</h2><p id="contactDisplay"></p>
+<h2>Customer Service FAQ</h2><p id="faqDisplay"></p>
+<h2>Local Travel Guide</h2><p id="travelDisplay"></p>
+<h2>Privacy Policy</h2><p id="privacyDisplay"></p>
+</section>
+
+</main>
+
+<footer>
+<h3>StayEase Hotel Booking</h3>
+<p>Comfortable stays, easy bookings and local discovery.</p>
+<p>Educational demonstration website</p>
+</footer>
+
+<script>
+function readData(key,fallback){
+ try{
+  let value=localStorage.getItem(key);
+  return value?JSON.parse(value):fallback;
+ }catch(e){return fallback;}
+}
+function store(key,value){
+ localStorage.setItem(key,JSON.stringify(value));
+}
+function safe(s){
+ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+ });
+}
+
+let hotels=readData("seHotels",[
+ {id:1,name:"Ocean View Resort",city:"Goa",address:"Calangute Beach, Goa",
+ rating:4.6,image:"https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700"},
+ {id:2,name:"Grand City Hotel",city:"Hyderabad",address:"HITEC City, Hyderabad",
+ rating:4.4,image:"https://images.unsplash.com/photo-1566073771259-6a8506099945?w=700"},
+ {id:3,name:"Mountain View Resort",city:"Ooty",address:"Ooty, Tamil Nadu",
+ rating:4.7,image:"https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=700"},
+ {id:4,name:"City Central Hotel",city:"Chennai",address:"T Nagar, Chennai",
+ rating:4.3,image:"https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=700"}
+]);
+
+let rooms=readData("seRooms",[
+ {id:1,hotelId:1,hotel:"Ocean View Resort",city:"Goa",address:"Calangute Beach, Goa",
+ name:"Standard Room",price:2500,quantity:10,amenities:"Wi-Fi, TV, Queen Bed",
+ image:"https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=700"},
+ {id:2,hotelId:2,hotel:"Grand City Hotel",city:"Hyderabad",address:"HITEC City, Hyderabad",
+ name:"Deluxe Room",price:3500,quantity:8,amenities:"Wi-Fi, AC, TV",
+ image:"https://images.unsplash.com/photo-1590490360182-c33d57733427?w=700"},
+ {id:3,hotelId:3,hotel:"Mountain View Resort",city:"Ooty",address:"Ooty, Tamil Nadu",
+ name:"Suite Room",price:5000,quantity:5,amenities:"Wi-Fi, AC, Living Area",
+ image:"https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=700"},
+ {id:4,hotelId:4,hotel:"City Central Hotel",city:"Chennai",address:"T Nagar, Chennai",
+ name:"Family Room",price:4000,quantity:6,amenities:"Wi-Fi, AC, Two Beds",
+ image:"https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=700"}
+]);
+
+let bookings=readData("seBookings",[]);
+let user=readData("seUser",null);
+let info=readData("seInfo",{
+ about:"StayEase helps travellers discover comfortable accommodation.",
+ contact:"Email: support@example.com | Phone: +91 9876543210",
+ faq:"Q: How can I book? A: Search for a room, select dates and confirm.",
+ travel:"Ask the hotel for local transport and sightseeing information.",
+ privacy:"This demonstration stores data in your browser. Do not enter sensitive information."
+});
+
+function today(){
+ let d=new Date();
+ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+document.getElementById("checkin").min=today();
+document.getElementById("checkout").min=today();
+document.getElementById("checkin").addEventListener("change",function(){
+ document.getElementById("checkout").min=this.value||today();
+});
+document.getElementById("bookIn").min=today();
+document.getElementById("bookIn").addEventListener("change",function(){
+ document.getElementById("bookOut").min=this.value||today();
+});
+
+function show(id){
+ document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+ if(id==="hotels")displayHotels();
+ if(id==="roomsSection")displayRooms();
+ if(id==="profile")displayProfile();
+ if(id==="admin")displayAdmin();
+ if(id==="information")displayInformation();
+ window.scrollTo(0,0);
+}
+
+function displayHotels(list=hotels){
+ let box=document.getElementById("hotelList");
+ box.innerHTML="";
+ list.forEach(h=>{
+  box.innerHTML+=`<div class="card">
+  <img src="${safe(h.image)}" alt="${safe(h.name)}" loading="lazy">
+  <div class="content"><h3>${safe(h.name)}</h3>
+  <p>📍 ${safe(h.address)}</p><p>⭐ ${safe(h.rating)}/5</p>
+  <button onclick="hotelMap('${safe(h.address)}')">View Location</button>
+  <button onclick="searchHotelRooms(${h.id})">View Rooms</button></div></div>`;
+ });
+ if(!list.length)box.innerHTML="<p>No matching hotels found.</p>";
+}
+
+function displayRooms(list=rooms,start="",end=""){
+ let box=document.getElementById("roomList");
+ box.innerHTML="";
+ list.forEach(r=>{
+  box.innerHTML+=`<div class="card">
+  <img src="${safe(r.image)}" alt="${safe(r.name)}" loading="lazy">
+  <div class="content"><h3>${safe(r.hotel)}</h3>
+  <h4>${safe(r.name)}</h4><p>${safe(r.amenities)}</p>
+  <p>📍 ${safe(r.address||r.city||"")}</p>
+  <p class="price">₹${r.price} / night</p>
+  <p>Available: ${available(r.id,start,end)}</p>
+  <button onclick="bookRoom(${r.id})">Book Now</button>
+  <button onclick="hotelMap('${safe(r.address||r.hotel)}')">Map</button>
+  </div></div>`;
+ });
+ if(!list.length)box.innerHTML="<p>No rooms match your search.</p>";
+}
+
+function available(id,start,end,excludeId){
+ let r=rooms.find(x=>x.id===id);
+ if(!r)return 0;
+ if(!start||!end||end<=start)return r.quantity;
+ let used=bookings.filter(b=>b.roomId===id&&b.status==="Confirmed"&&
+ b.id!==excludeId&&start<b.end&&end>b.start).length;
+ return Math.max(0,r.quantity-used);
+}
+
+function searchHotels(){
+ let destination=document.getElementById("destination").value.trim().toLowerCase();
+ let start=document.getElementById("checkin").value;
+ let end=document.getElementById("checkout").value;
+ let guests=Number(document.getElementById("guests").value);
+ let max=Number(document.getElementById("maxPrice").value)||Infinity;
+ if(!start||!end||end<=start||start<today()||guests<1){
+  alert("Enter valid future check-in and check-out dates and guests.");return;
+ }
+ let found=hotels.filter(h=>!destination||
+  (h.name+" "+h.city+" "+h.address).toLowerCase().includes(destination));
+ let ids=found.map(h=>h.id);
+ let filtered=rooms.filter(r=>ids.includes(r.hotelId)&&r.price<=max&&available(r.id,start,end)>0);
+ document.getElementById("message").textContent="Available room types: "+filtered.length;
+ displayHotels(found);
+ displayRooms(filtered,start,end);
+ document.getElementById("hotels").scrollIntoView({behavior:"smooth"});
+}
+
+function searchHotelRooms(hotelId){
+ let start=document.getElementById("checkin").value;
+ let end=document.getElementById("checkout").value;
+ let list=rooms.filter(r=>r.hotelId===hotelId&&(!start||!end||available(r.id,start,end)>0));
+ displayRooms(list,start,end);
+ document.getElementById("roomsSection").scrollIntoView({behavior:"smooth"});
+}
+
+function bookRoom(id){
+ if(!user){alert("Please register before booking.");show("register");return;}
+ let r=rooms.find(x=>x.id===id);
+ document.getElementById("bookRoomId").value=id;
+ document.getElementById("bookHotel").value=r.hotel;
+ document.getElementById("bookRoom").value=r.name;
+ document.getElementById("bookName").value=user.name;
+ document.getElementById("bookEmail").value=user.email;
+ document.getElementById("bookPhone").value=user.phone;
+ document.getElementById("bookIn").value=document.getElementById("checkin").value;
+ document.getElementById("bookOut").value=document.getElementById("checkout").value;
+ document.getElementById("bookGuests").value=document.getElementById("guests").value||1;
+ show("bookingFormSection");
+}
+
+document.getElementById("registerForm").addEventListener("submit",function(e){
+ e.preventDefault();
+ user={
+  name:document.getElementById("name").value.trim(),
+  email:document.getElementById("email").value.trim().toLowerCase(),
+  phone:document.getElementById("phone").value.trim()
+ };
+ store("seUser",user);
+ alert("Profile saved successfully!");
+ show("profile");
+});
+
+function displayProfile(){
+ document.getElementById("profileDetails").innerHTML=user?
+ "<p>Name: "+safe(user.name)+"</p><p>Email: "+safe(user.email)+"</p><p>Phone: "+safe(user.phone)+"</p>":
+ "No profile. Please register.";
+}
+
+document.getElementById("bookingForm").addEventListener("submit",function(e){
+ e.preventDefault();
+ let id=Number(document.getElementById("bookRoomId").value);
+ let start=document.getElementById("bookIn").value;
+ let end=document.getElementById("bookOut").value;
+ let guests=Number(document.getElementById("bookGuests").value);
+ let email=document.getElementById("bookEmail").value.trim().toLowerCase();
+ if(!start||!end||start<today()||end<=start||guests<1){
+  alert("Enter valid dates and guests.");return;
+ }
+ if(!user||email!==user.email){alert("Use your registered email.");return;}
+ if(available(id,start,end)<1){alert("No rooms available for these dates.");return;}
+ let r=rooms.find(x=>x.id===id);
+ let total=r.price*Math.round((new Date(end)-new Date(start))/86400000);
+ bookings.push({
+  id:Date.now(),roomId:id,hotel:r.hotel,room:r.name,
+  name:user.name,email:user.email,phone:user.phone,start:start,end:end,
+  guests:guests,total:total,status:"Confirmed"
+ });
+ store("seBookings",bookings);
+ alert("Booking confirmed! ID: "+bookings[bookings.length-1].id+" | Total ₹"+total);
+ document.getElementById("historyEmail").value=user.email;
+ show("myBookings");displayBookings();
+});
+
+function canChange(b){
+ let limit=new Date(b.start+"T00:00:00");
+ limit.setDate(limit.getDate()-3);
+ return new Date(today()+"T00:00:00")<=limit;
+}
+
+function displayBookings(){
+ let email=document.getElementById("historyEmail").value.trim().toLowerCase();
+ let list=bookings.filter(b=>b.email===email);
+ let box=document.getElementById("bookingHistory");box.innerHTML="";
+ if(!list.length){box.innerHTML="<p>No bookings found.</p>";return;}
+ list.forEach(b=>{
+  box.innerHTML+=`<div class="card"><div class="content">
+  <h3>${safe(b.hotel)} - ${safe(b.room)}</h3><p>Booking ID: ${b.id}</p>
+  <p>${b.start} to ${b.end}</p><p>Guests: ${b.guests} | Total ₹${b.total}</p>
+  <p>Status: ${b.status}</p>
+  ${b.status==="Confirmed"&&canChange(b)?
+  `<button onclick="modifyBooking(${b.id})">Modify</button><button onclick="cancelBooking(${b.id})">Cancel</button>`:""}
+  </div></div>`;
+ });
+}
+
+function modifyBooking(id){
+ let b=bookings.find(x=>x.id===id);
+ if(!b||!canChange(b)){alert("Changes close 3 days before arrival.");return;}
+ let start=prompt("New check-in date YYYY-MM-DD",b.start);
+ if(start===null)return;
+ let end=prompt("New check-out date YYYY-MM-DD",b.end);
+ if(end===null)return;
+ if(!start||start<today()||!end||end<=start||available(b.roomId,start,end,id)<1){
+  alert("Invalid dates or room unavailable.");return;
+ }
+ b.start=start;b.end=end;
+ let r=rooms.find(x=>x.id===b.roomId);
+ b.total=r.price*Math.round((new Date(end)-new Date(start))/86400000);
+ store("seBookings",bookings);displayBookings();alert("Booking updated.");
+}
+
+function cancelBooking(id){
+ let b=bookings.find(x=>x.id===id);
+ if(!b||!canChange(b)){alert("Cancellation closes 3 days before arrival.");return;}
+ if(confirm("Cancel this booking?")){
+  b.status="Cancelled";store("seBookings",bookings);displayBookings();
+ }
+}
+
+function displayAdmin(){
+ document.getElementById("adminList").innerHTML=
+ "<table><tr><th>Hotel</th><th>Room</th><th>Price</th><th>Quantity</th><th>Action</th></tr>"+
+ rooms.map(r=>`<tr><td>${safe(r.hotel)}</td><td>${safe(r.name)}</td><td>₹${r.price}</td><td>${r.quantity}</td><td><button onclick="editRoom(${r.id})">Edit</button><button onclick="deleteRoom(${r.id})">Delete</button></td></tr>`).join("")+"</table>";
+ document.getElementById("adminBookingList").innerHTML=
+ "<table><tr><th>ID</th><th>Guest</th><th>Hotel / Room</th><th>Status</th><th>Action</th></tr>"+
+ bookings.map(b=>`<tr><td>${b.id}</td><td>${safe(b.name)}<br>${safe(b.email)}</td><td>${safe(b.hotel)} / ${safe(b.room)}</td><td>${b.status}</td><td>${b.status==="Confirmed"?`<button onclick="adminCancel(${b.id})">Cancel</button>`:""}</td></tr>`).join("")+"</table>";
+ ["about","contact","faq","travel","privacy"].forEach(k=>document.getElementById(k+"Text").value=info[k]);
+}
+
+document.getElementById("roomForm").addEventListener("submit",function(e){
+ e.preventDefault();
+ let id=Number(document.getElementById("editRoomId").value);
+ let h=document.getElementById("adminHotel").value.trim();
+ let city=document.getElementById("adminCity").value.trim();
+ let address=document.getElementById("adminAddress").value.trim();
+ let n=document.getElementById("adminRoom").value.trim();
+ let p=Number(document.getElementById("adminPrice").value);
+ let q=Number(document.getElementById("adminQuantity").value);
+ let img=document.getElementById("adminImage").value.trim();
+ let a=document.getElementById("adminAmenities").value.trim();
+ if(!h||!city||!address||!n||p<=0||q<0){alert("Enter valid room details.");return;}
+ let hotel=hotels.find(x=>x.name.toLowerCase()===h.toLowerCase());
+ if(!hotel){
+  hotel={id:Date.now(),name:h,city:city,address:address,rating:"New",
+   image:img||"https://images.unsplash.com/photo-1566073771259-6a8506099945?w=700"};
+  hotels.push(hotel);
+ }else{
+  hotel.city=city;hotel.address=address;
+  if(img)hotel.image=img;
+ }
+ let r=rooms.find(x=>x.id===id);
+ if(r){
+  r.hotel=h;r.city=city;r.address=address;r.name=n;r.price=p;r.quantity=q;
+  r.image=img||r.image;r.amenities=a;r.hotelId=hotel.id;
+ }else{
+  rooms.push({id:Date.now()+1,hotelId:hotel.id,hotel:h,city:city,address:address,
+   name:n,price:p,quantity:q,image:img||hotel.image,amenities:a});
+ }
+ store("seRooms",rooms);store("seHotels",hotels);
+ this.reset();document.getElementById("editRoomId").value="";
+ displayAdmin();displayHotels();displayRooms();
+ alert("Room details saved!");
+});
+
+function editRoom(id){
+ let r=rooms.find(x=>x.id===id);if(!r)return;
+ document.getElementById("editRoomId").value=id;
+ document.getElementById("adminHotel").value=r.hotel;
+ document.getElementById("adminCity").value=r.city||"";
+ document.getElementById("adminAddress").value=r.address||"";
+ document.getElementById("adminRoom").value=r.name;
+ document.getElementById("adminPrice").value=r.price;
+ document.getElementById("adminQuantity").value=r.quantity;
+ document.getElementById("adminImage").value=r.image;
+ document.getElementById("adminAmenities").value=r.amenities;
+ document.getElementById("roomForm").scrollIntoView({behavior:"smooth"});
+}
+
+function deleteRoom(id){
+ if(bookings.some(b=>b.roomId===id&&b.status==="Confirmed")){
+  alert("Cancel active bookings first.");return;
+ }
+ if(confirm("Delete room?")){
+  rooms=rooms.filter(r=>r.id!==id);store("seRooms",rooms);displayAdmin();displayRooms();
+ }
+}
+function adminCancel(id){
+ let b=bookings.find(x=>x.id===id);
+ if(b&&confirm("Cancel booking?")){
+  b.status="Cancelled";store("seBookings",bookings);displayAdmin();
+ }
+}
+
+function saveInformation(){
+ info={
+  about:document.getElementById("aboutText").value,
+  contact:document.getElementById("contactText").value,
+  faq:document.getElementById("faqText").value,
+  travel:document.getElementById("travelText").value,
+  privacy:document.getElementById("privacyText").value
+ };
+ store("seInfo",info);displayInformation();alert("Information saved.");
+}
+function displayInformation(){
+ ["about","contact","faq","travel","privacy"].forEach(k=>{
+  document.getElementById(k+"Display").textContent=info[k];
+ });
+}
+
+function hotelMap(place){
+ document.getElementById("map").innerHTML=
+ '<iframe title="Hotel location map" loading="lazy" src="https://maps.google.com/maps?q='+
+ encodeURIComponent(place)+'&z=14&output=embed"></iframe>';
+ document.getElementById("map").scrollIntoView({behavior:"smooth"});
+}
+function openGoogleMaps(){
+ let place=document.getElementById("destination").value.trim()||"hotels near me";
+ window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(place),"_blank");
+}
+function openNearbyPlaces(){
+ let place=document.getElementById("destination").value.trim()||"near me";
+ window.open("https://www.google.com/maps/search/tourist+attractions+near+"+
+ encodeURIComponent(place),"_blank");
+}
+
+/* CURRENT LOCATION DETECTION */
+function detectCurrentLocation(){
+ let output=document.getElementById("currentLocation");
+ if(!navigator.geolocation){
+  output.textContent="Your browser does not support location detection.";
+  return;
+ }
+ output.textContent="Requesting location permission...";
+ navigator.geolocation.getCurrentPosition(function(position){
+  let latitude=position.coords.latitude;
+  let longitude=position.coords.longitude;
+  output.innerHTML="📍 Current location detected!<br>Latitude: "+
+   latitude.toFixed(6)+"<br>Longitude: "+longitude.toFixed(6)+
+   '<br><a target="_blank" rel="noopener" href="https://www.google.com/maps?q='+
+   latitude+','+longitude+'">View My Location on Google Maps</a>';
+  showNearbyHotels(latitude,longitude);
+ },function(error){
+  if(error.code===1)output.textContent="Permission denied. Allow location access in browser settings.";
+  else if(error.code===2)output.textContent="Location unavailable. Turn on device location services.";
+  else output.textContent="Location request timed out. Please try again.";
+ },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+
+function showNearbyHotels(latitude,longitude){
+ document.getElementById("map").innerHTML=
+ '<iframe title="Nearby hotels map" loading="lazy" src="https://maps.google.com/maps?q=hotels%20near%20'+
+ latitude+','+longitude+'&z=14&output=embed"></iframe>';
+ window.open("https://www.google.com/maps/search/hotels/@"+
+ latitude+","+longitude+",14z","_blank");
+}
+
+hotels=readData("seHotels",hotels);
+displayHotels();
+displayRooms();
+displayProfile();
+displayInformation();
+</script>
+</body>
+</html>

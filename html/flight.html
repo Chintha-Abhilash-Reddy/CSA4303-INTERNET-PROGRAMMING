@@ -1,0 +1,498 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyBook | Flight Reservation</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#eff6ff;color:#18304d}
+header{background:#06264b;color:white;padding:15px 4%;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:relative;z-index:5}
+.logo{font-size:27px;font-weight:bold}.logo span{color:#67d8ff}
+nav{display:flex;gap:5px;flex-wrap:wrap}
+button{border:0;padding:11px 14px;border-radius:7px;background:#0759c7;color:white;font-weight:bold;cursor:pointer}
+button:hover{filter:brightness(1.1)}
+nav button{background:transparent;color:white;padding:9px}
+nav button:hover{background:#174b80}
+input,select,textarea{width:100%;padding:12px;margin:6px 0 14px;border:1px solid #cbd7e6;border-radius:6px;background:white;font-size:14px}
+label{font-size:13px;font-weight:bold}
+main{max-width:1200px;margin:auto;padding:20px}
+.page{display:none}.page.active{display:block}
+.card{background:white;border-radius:13px;padding:22px;margin-bottom:20px;box-shadow:0 4px 18px #0b2d5010}
+h2{color:#082d59;margin-top:0}h3{color:#12539b}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.small{font-size:12px;color:#64748b;line-height:1.6}
+.price{font-size:23px;font-weight:bold;color:#0759c7}
+.pill{display:inline-block;background:#e2f7ed;color:#08754e;border-radius:20px;padding:6px 10px;font-size:12px}
+.hero{position:relative;overflow:hidden;border-radius:18px;min-height:370px;padding:35px;color:white;background:linear-gradient(#57b7e9 0%,#d7f0ff 58%,#b8ccd3 59%,#607c8d 60%,#15334f 100%)}
+.hero:after{content:"";position:absolute;bottom:0;left:0;right:0;height:42%;background:repeating-linear-gradient(90deg,transparent 0 70px,#e1eaf025 71px 73px)}
+.hero h1{font-size:42px;max-width:550px;text-shadow:0 2px 6px #17354c}
+.hero p{max-width:530px;line-height:1.7}
+.hero>*{position:relative;z-index:2}
+.sky{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.cloud{position:absolute;width:130px;height:24px;background:#ffffff90;border-radius:40px;filter:blur(1px);animation:cloudMove 24s linear infinite}
+.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border-radius:50%;width:45px;height:42px;top:-20px;left:20px}
+.cloud:after{left:58px;top:-13px;width:52px;height:35px}
+.c1{top:45px;left:-160px;animation-duration:32s}
+.c2{top:125px;left:-180px;animation-duration:42s;animation-delay:-16s;transform:scale(.7)}
+.c3{top:80px;left:-190px;animation-duration:37s;animation-delay:-8s;transform:scale(.85)}
+@keyframes cloudMove{from{left:-180px}to{left:115%}}
+.plane{position:absolute;left:-200px;color:white;font-size:47px;filter:drop-shadow(0 5px 4px #17334a55);white-space:nowrap}
+.plane:after{content:"";position:absolute;height:2px;width:100px;background:#ffffff80;left:-100px;top:27px}
+.plane1{top:70px;animation:planeAcross 17s linear infinite}
+.plane2{top:160px;font-size:31px;animation:planeAcross 23s linear infinite;animation-delay:-10s}
+.plane3{top:210px;font-size:25px;animation:planeAcross 29s linear infinite;animation-delay:-19s}
+@keyframes planeAcross{0%{left:-200px;transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-17px) rotate(0)}100%{left:115%;transform:translateY(5px) rotate(2deg)}}
+.searchbox{margin-top:-25px;position:relative;z-index:3}
+.flight{border:1px solid #dbe6f3;border-radius:10px;padding:17px;margin:12px 0;background:white}
+.flex{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.seats{display:grid;grid-template-columns:repeat(4,minmax(45px,65px));gap:9px;margin:15px 0}
+.seat{background:#e0edff;color:#15519a}
+.seat.selected{background:#0b956d;color:white}
+.seat.booked{background:#d6dce4;color:#7b8491;cursor:not-allowed}
+.menu-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #e5edf6}
+.menu-item p{font-size:13px;color:#64748b;margin:5px 0}
+.boarding{border:2px dashed #3985bd;border-radius:12px;overflow:hidden;margin:15px 0;background:white}
+.board-head{background:#062d59;color:white;padding:18px}
+.board-body{padding:20px}
+.route{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:20px 0}
+.city{font-size:24px;font-weight:bold}
+.warning{background:#fff4d6;padding:13px;border-radius:8px;font-size:13px;line-height:1.7}
+.stat{padding:18px;background:#eaf3ff;border-radius:10px}
+.stat strong{display:block;font-size:25px;color:#0759c7;margin-top:8px}
+footer{background:#06264b;color:white;text-align:center;padding:24px}
+hr{border:0;border-top:1px solid #e5edf6;margin:20px 0}
+@media(max-width:700px){main{padding:12px}.grid,.grid3{grid-template-columns:1fr}.hero{padding:23px;min-height:330px}.hero h1{font-size:32px}header{padding:12px}.logo{font-size:23px}.city{font-size:19px}}
+@media print{header,footer,.no-print,button{display:none!important}body{background:white}main{padding:0}.page{display:none!important}.page.active{display:block!important}}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="logo">✈ Sky<span>Book</span></div>
+  <nav>
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('search')">Flights</button>
+    <button onclick="showPage('food')">Food</button>
+    <button onclick="showPage('trips')">My Trips</button>
+    <button onclick="showPage('documents')">Documents</button>
+    <button onclick="showPage('account')">Account</button>
+    <button onclick="showPage('feedback')">Feedback</button>
+    <button onclick="showPage('admin')">Admin</button>
+  </nav>
+</header>
+
+<main>
+<section id="home" class="page active">
+  <div class="hero">
+    <div class="sky">
+      <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+      <div class="plane plane1">✈</div>
+      <div class="plane plane2">✈</div>
+      <div class="plane plane3">✈</div>
+    </div>
+    <span class="pill">YOUR JOURNEY STARTS HERE</span>
+    <h1>Discover the world with SkyBook</h1>
+    <p>Search flights, choose your seat, order food, manage travel details and generate your demo boarding pass.</p>
+    <button onclick="showPage('search')">Explore Flights →</button>
+  </div>
+
+  <div class="searchbox card">
+    <h2>Where do you want to fly?</h2>
+    <div class="grid">
+      <div><label>From</label><select id="homeFrom"></select></div>
+      <div><label>To</label><select id="homeTo"></select></div>
+      <div><label>Departure date</label><input type="date" id="homeDate"></div>
+      <div><label>Travel class</label><select id="homeClass"><option>Economy</option><option>Premium Economy</option><option>Business</option></select></div>
+    </div>
+    <button onclick="homeSearch()">Search Flights</button>
+  </div>
+
+  <div class="grid3">
+    <div class="card"><h3>✈ Flight Booking</h3><p>Search routes and choose your seat.</p></div>
+    <div class="card"><h3>🍱 Food Ordering</h3><p>Add meals, drinks and snacks to your trip.</p></div>
+    <div class="card"><h3>🎫 Boarding Pass</h3><p>Generate and print a demo boarding pass.</p></div>
+  </div>
+  <div class="warning">This is a student project demo. Flight schedules, availability and prices are sample data, not live airline information.</div>
+</section>
+
+<section id="search" class="page">
+  <div class="card">
+    <h2>Search Flights</h2>
+    <div class="grid">
+      <div><label>Departure city</label><select id="from"></select></div>
+      <div><label>Destination city</label><select id="to"></select></div>
+      <div><label>Travel date</label><input type="date" id="travelDate"></div>
+      <div><label>Travel class</label><select id="travelClass"><option>Economy</option><option>Premium Economy</option><option>Business</option></select></div>
+      <div><label>Passengers</label><select id="passengers"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+      <div><label>Trip type</label><select id="tripType"><option>One Way</option><option>Round Trip</option></select></div>
+    </div>
+    <label>Return date (optional)</label><input type="date" id="returnDate">
+    <button onclick="searchFlights()">Find Flights</button>
+    <p class="small">The demo creates sample flights for every different city combination.</p>
+  </div>
+  <div id="flightResults"></div>
+</section>
+
+<section id="booking" class="page">
+  <div class="card">
+    <h2>Choose Your Seat</h2>
+    <div id="selectedFlight"></div>
+    <p class="small">Blue seats are available, green is selected, grey is unavailable in this demo.</p>
+    <div class="seats" id="seatMap"></div>
+    <p id="seatMessage" class="small">Select a seat to continue.</p>
+    <hr>
+    <h2>Passenger Details</h2>
+    <div class="grid">
+      <div><label>Full name</label><input id="passengerName" placeholder="Passenger name"></div>
+      <div><label>Email</label><input id="passengerEmail" type="email" placeholder="Email address"></div>
+      <div><label>Mobile number</label><input id="passengerPhone" placeholder="Mobile number"></div>
+      <div><label>Age</label><input id="passengerAge" type="number" min="1" max="120" placeholder="Age"></div>
+      <div><label>Meal preference</label><select id="mealPreference"><option>Standard</option><option>Vegetarian</option><option>Vegan</option><option>Jain</option></select></div>
+      <div><label>Assistance</label><select id="assistance"><option>None</option><option>Wheelchair assistance</option><option>Extra assistance</option></select></div>
+    </div>
+    <button onclick="continuePayment()">Continue to Payment</button>
+  </div>
+</section>
+
+<section id="payment" class="page">
+  <div class="card">
+    <h2>Payment Checkout</h2>
+    <div id="paymentSummary"></div>
+    <label>Payment method</label>
+    <select id="paymentMethod" onchange="paymentFields()">
+      <option>UPI</option><option>Credit Card</option><option>Debit Card</option><option>Net Banking</option><option>Wallet</option>
+    </select>
+    <div id="paymentExtra"></div>
+    <div class="warning">Demo checkout only. No money is transferred. Never enter your real card number, CVV, UPI PIN, OTP or banking password here.</div>
+    <br><button onclick="confirmBooking()">Confirm Demo Booking</button>
+    <button style="background:#65758b" onclick="showPage('booking')">Back</button>
+  </div>
+</section>
+
+<section id="food" class="page">
+  <div class="card">
+    <h2>🍱 In-Flight Food Ordering</h2>
+    <div id="foodMenu"></div>
+    <hr><h3>Your Cart</h3>
+    <div id="foodCart"></div>
+    <h3 id="foodTotal">Total: ₹0</h3>
+    <button onclick="showPage('search')">Book a Flight</button>
+    <button style="background:#0b956d" onclick="addFoodToBooking()">Add Food to Trip</button>
+  </div>
+</section>
+
+<section id="trips" class="page">
+  <div class="card"><h2>My Trips & Booking History</h2><div id="tripList"></div></div>
+  <div class="card">
+    <h2>Check Booking Status</h2>
+    <label>Booking reference</label><input id="statusReference" placeholder="Example: SB123456">
+    <button onclick="checkStatus()">Check Status</button>
+    <div id="statusResult"></div>
+  </div>
+</section>
+
+<section id="ticket" class="page">
+  <div class="card">
+    <h2>Your Boarding Pass</h2>
+    <div class="warning">Demo boarding pass only. It is not valid for airport travel.</div>
+    <div id="boardingPass"></div>
+    <button onclick="window.print()">Print Boarding Pass</button>
+    <button style="background:#65758b" onclick="showPage('trips')">My Trips</button>
+  </div>
+</section>
+
+<section id="documents" class="page">
+  <div class="card">
+    <h2>Travel Documents</h2>
+    <div class="warning">Use fictional information only. This demo does not verify documents or save the entered document numbers. Avoid entering real Aadhaar, passport or visa numbers.</div>
+    <h3>Passport Details</h3>
+    <div class="grid">
+      <div><label>Passport holder name</label><input id="passportName"></div>
+      <div><label>Passport number (demo)</label><input id="passportNumber" placeholder="Fictional number only"></div>
+      <div><label>Issuing country</label><select id="passportCountry"><option>India</option><option>United States</option><option>United Kingdom</option><option>Other</option></select></div>
+      <div><label>Expiry date</label><input type="date" id="passportExpiry"></div>
+    </div>
+    <h3>Visa Details</h3>
+    <div class="grid">
+      <div><label>Destination country</label><input id="visaCountry"></div>
+      <div><label>Visa type</label><select id="visaType"><option>Tourist</option><option>Business</option><option>Student</option><option>Transit</option><option>Work</option></select></div>
+      <div><label>Visa number (demo)</label><input id="visaNumber" placeholder="Fictional number only"></div>
+      <div><label>Visa expiry</label><input type="date" id="visaExpiry"></div>
+    </div>
+    <h3>Aadhaar Details</h3>
+    <div class="grid">
+      <div><label>Holder name</label><input id="aadhaarName"></div>
+      <div><label>Aadhaar number</label><input id="aadhaarNumber" placeholder="Do not enter real number"></div>
+    </div>
+    <button onclick="checkDocuments()">Check Form</button><p id="documentMessage" class="small"></p>
+  </div>
+</section>
+
+<section id="account" class="page">
+  <div class="card">
+    <h2>Register / Login</h2>
+    <div class="grid">
+      <div><h3>Create Account</h3><label>Name</label><input id="registerName"><label>Email</label><input id="registerEmail" type="email"><label>Demo password</label><input id="registerPassword" type="password"><button onclick="registerUser()">Register</button></div>
+      <div><h3>Login</h3><label>Email</label><input id="loginEmail" type="email"><label>Demo password</label><input id="loginPassword" type="password"><button onclick="loginUser()">Login</button> <button style="background:#65758b" onclick="logoutUser()">Logout</button></div>
+    </div>
+    <hr><h3>My Profile</h3><div id="profileInfo">Guest user</div><p id="accountMessage" class="small"></p>
+    <p class="small">This is a local demo, not secure account authentication. Do not use real passwords.</p>
+  </div>
+</section>
+
+<section id="feedback" class="page">
+  <div class="card">
+    <h2>Customer Feedback</h2>
+    <label>Name</label><input id="feedbackName">
+    <label>Rating</label><select id="feedbackRating"><option>5 - Excellent</option><option>4 - Very Good</option><option>3 - Good</option><option>2 - Average</option><option>1 - Poor</option></select>
+    <label>Comments</label><textarea id="feedbackText" rows="4"></textarea>
+    <button onclick="sendFeedback()">Submit Feedback</button><p id="feedbackMessage" class="small"></p>
+  </div>
+</section>
+
+<section id="admin" class="page">
+  <div class="card">
+    <h2>Admin Dashboard</h2>
+    <p class="small">Demo login: admin@skybook.com | Password: admin123</p>
+    <label>Email</label><input id="adminEmail" type="email">
+    <label>Password</label><input id="adminPassword" type="password">
+    <button onclick="adminLogin()">Admin Login</button>
+    <div id="adminDashboard" style="display:none">
+      <div class="grid3">
+        <div class="stat">Bookings<strong id="statBookings">0</strong></div>
+        <div class="stat">Users<strong id="statUsers">0</strong></div>
+        <div class="stat">Feedback<strong id="statFeedback">0</strong></div>
+      </div>
+      <h3>Add Sample Flight</h3>
+      <div class="grid">
+        <div><label>Airline</label><input id="newAirline"></div>
+        <div><label>Flight number</label><input id="newFlightNo"></div>
+        <div><label>From</label><input id="newFrom"></div>
+        <div><label>To</label><input id="newTo"></div>
+        <div><label>Departure</label><input id="newDeparture" type="time" value="10:00"></div>
+        <div><label>Arrival</label><input id="newArrival" type="time" value="12:00"></div>
+        <div><label>Fare ₹</label><input id="newFare" type="number"></div>
+      </div>
+      <button onclick="addFlight()">Add Sample Flight</button>
+      <h3>Booking Report</h3><div id="adminReport"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <h3 style="color:white">✈ SkyBook Flight Reservation</h3>
+  <p>Student project | HTML + CSS + JavaScript</p>
+  <p class="small" style="color:#d7e8ff">Moving aircraft are CSS animations. Flight schedules and payments are simulated.</p>
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const cities=["Chennai","Hyderabad","Bengaluru","Delhi","Mumbai","Kochi","Kolkata","Goa","Pune","Jaipur","Ahmedabad","Lucknow","Visakhapatnam","Coimbatore","Tirupati"];
+
+function fillCities(id){
+  $(id).innerHTML=cities.map(c=>`<option>${c}</option>`).join("");
+}
+["homeFrom","homeTo","from","to"].forEach(fillCities);
+$("homeTo").value="Hyderabad";
+$("to").value="Hyderabad";
+
+const now=new Date();
+const localDate=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+["homeDate","travelDate","returnDate"].forEach(id=>{$(id).min=localDate;});
+$("homeDate").value=localDate;
+$("travelDate").value=localDate;
+
+let flights=[
+{airline:"SkyBook Air",no:"SB 101",from:"Chennai",to:"Hyderabad",dep:"07:00",arr:"08:15",fare:3200},
+{airline:"Indian Sky",no:"IS 204",from:"Chennai",to:"Delhi",dep:"09:30",arr:"12:15",fare:5600},
+{airline:"SkyBook Air",no:"SB 305",from:"Hyderabad",to:"Bengaluru",dep:"11:00",arr:"12:10",fare:2800},
+{airline:"Deccan Wings",no:"DW 420",from:"Delhi",to:"Mumbai",dep:"13:15",arr:"15:20",fare:4800},
+{airline:"Indian Sky",no:"IS 506",from:"Bengaluru",to:"Chennai",dep:"16:00",arr:"17:00",fare:2600},
+{airline:"SkyBook Air",no:"SB 601",from:"Mumbai",to:"Goa",dep:"18:20",arr:"19:35",fare:3500}
+];
+
+let selectedFlight=null,selectedSeat="",pendingBooking=null,foodCart={},currentUser="",adminEnabled=false;
+
+function read(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v===null?d:v}catch(e){return d}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){alert("Browser storage unavailable.")}}
+function bookings(){return read("sb_bookings",[])}
+function users(){return read("sb_users",[])}
+function feedbackEntries(){return read("sb_feedback",[])}
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  $(id).classList.add("active");
+  if(id==="trips")renderTrips();
+  if(id==="food")renderFood();
+  if(id==="account")renderProfile();
+  if(id==="admin"&&adminEnabled)renderAdmin();
+  window.scrollTo(0,0);
+}
+function homeSearch(){
+  $("from").value=$("homeFrom").value;
+  $("to").value=$("homeTo").value;
+  $("travelDate").value=$("homeDate").value;
+  $("travelClass").value=$("homeClass").value;
+  searchFlights();
+}
+
+/* FIXED FLIGHT SEARCH: generates sample flights for any different city pair */
+function searchFlights(){
+  const from=$("from").value,to=$("to").value,date=$("travelDate").value;
+  const cls=$("travelClass").value,count=Number($("passengers").value);
+  if(from===to){alert("Please choose two different cities.");return}
+  if(!date||date<localDate){alert("Please choose a valid travel date.");return}
+
+  let results=flights.filter(f=>f.from.toLowerCase()===from.toLowerCase()&&f.to.toLowerCase()===to.toLowerCase());
+
+  if(results.length===0){
+    const seed=(from.length*13+to.length*17)%500;
+    results=[
+      {airline:"SkyBook Air",no:"SB "+(100+seed),from,to,dep:"07:30",arr:"09:15",fare:3300+seed},
+      {airline:"Indian Sky",no:"IS "+(200+seed),from,to,dep:"12:00",arr:"13:45",fare:3900+seed},
+      {airline:"Deccan Wings",no:"DW "+(300+seed),from,to,dep:"18:30",arr:"20:15",fare:3600+seed}
+    ];
+  }
+
+  $("flightResults").innerHTML="<div class='card'><h2>Sample Flights Found</h2><p>"+safe(from)+" → "+safe(to)+" | "+safe(date)+" | "+safe(cls)+"</p>"+
+  results.map(f=>{
+    const multiplier=cls==="Business"?2.7:cls==="Premium Economy"?1.5:1;
+    const fare=Math.round(f.fare*multiplier);
+    return `<div class="flight">
+      <div class="flex"><b>${safe(f.airline)} · ${safe(f.no)}</b><span class="pill">Demo schedule</span></div>
+      <div class="flex"><div><h3>${safe(f.dep)}</h3>${safe(f.from)}</div>
+      <div>✈ ─────→</div><div><h3>${safe(f.arr)}</h3>${safe(f.to)}</div>
+      <div><div class="price">₹${fare.toLocaleString("en-IN")}</div><span class="small">per passenger</span></div></div>
+      <button onclick='chooseFlight(${JSON.stringify(f).replace(/'/g,"&#39;")},${fare},${count},"${safe(date)}","${safe(cls)}")'>Select Flight</button>
+    </div>`;
+  }).join("")+"</div>";
+}
+function chooseFlight(f,fare,count,date,cls){
+  selectedFlight={...f,fare,count,date,travelClass:cls,tripType:$("tripType").value,returnDate:$("returnDate").value};
+  selectedSeat="";
+  $("selectedFlight").innerHTML=`<div class="flight"><h3>${safe(f.airline)} · ${safe(f.no)}</h3><p>${safe(f.from)} → ${safe(f.to)}</p><p>${safe(date)} · ${safe(cls)} · ${count} passenger(s)</p><div class="price">₹${(fare*count).toLocaleString("en-IN")}</div></div>`;
+  renderSeats();showPage("booking");
+}
+function renderSeats(){
+  const unavailable=["1B","2C","3A","4D","5B","6C","7A","8D"];
+  let html="";
+  for(let r=1;r<=8;r++)for(const col of ["A","B","C","D"]){
+    const name=r+col,booked=unavailable.includes(name);
+    html+=`<button id="seat${name}" class="seat ${booked?"booked":""}" ${booked?"disabled":`onclick="selectSeat('${name}')"`}>${name}</button>`;
+  }
+  $("seatMap").innerHTML=html;
+}
+function selectSeat(s){
+  selectedSeat=s;document.querySelectorAll(".seat").forEach(x=>x.classList.remove("selected"));
+  $("seat"+s).classList.add("selected");$("seatMessage").textContent="Selected seat: "+s;
+}
+function continuePayment(){
+  if(!selectedFlight||!selectedSeat){alert("Select a flight and seat.");return}
+  const name=$("passengerName").value.trim(),email=$("passengerEmail").value.trim();
+  if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert("Enter a name and valid email.");return}
+  const age=Number($("passengerAge").value);
+  if(!age||age<1||age>120){alert("Enter a valid age.");return}
+  const phone=$("passengerPhone").value.trim();
+  if(!/^[0-9+\-\s]{7,18}$/.test(phone)){alert("Enter a valid demo phone number.");return}
+  pendingBooking={flight:{...selectedFlight},seat:selectedSeat,name,email,phone,age,meal:$("mealPreference").value,assistance:$("assistance").value,food:Object.values(foodCart),foodTotal:Object.values(foodCart).reduce((s,x)=>s+x.price*x.qty,0)};
+  $("paymentSummary").innerHTML=`<p><b>${safe(name)}</b></p><p>${safe(selectedFlight.from)} → ${safe(selectedFlight.to)} · ${safe(selectedFlight.date)}</p><p>Seat: ${safe(selectedSeat)}</p><p>Flight: ₹${(selectedFlight.fare*selectedFlight.count).toLocaleString("en-IN")}</p><p>Food: ₹${pendingBooking.foodTotal}</p><h3>Total: ₹${(selectedFlight.fare*selectedFlight.count+pendingBooking.foodTotal).toLocaleString("en-IN")}</h3>`;
+  paymentFields();showPage("payment");
+}
+function paymentFields(){
+  const method=$("paymentMethod").value;
+  let html="<p class='small'>Demo payment only; no money is transferred.</p>";
+  if(method==="UPI")html+="<label>Demo UPI ID (optional)</label><input placeholder='example@upi'>";
+  if(method.includes("Card"))html+="<label>Sample cardholder name</label><input placeholder='Demo name'><label>Last four demo digits only</label><input maxlength='4' placeholder='0000'>";
+  if(method==="Net Banking")html+="<label>Sample bank</label><select><option>Demo Bank</option><option>Sample National Bank</option></select>";
+  if(method==="Wallet")html+="<label>Sample wallet</label><select><option>Demo Wallet</option><option>Sample Pay</option></select>";
+  $("paymentExtra").innerHTML=html;
+}
+function confirmBooking(){
+  if(!pendingBooking){alert("Complete passenger details first.");return}
+  const b=pendingBooking;b.ref="SB"+Math.floor(100000+Math.random()*900000);
+  b.status="Demo Confirmed";b.paymentMethod=$("paymentMethod").value;
+  b.total=b.flight.fare*b.flight.count+b.foodTotal;b.created=new Date().toLocaleString();
+  const list=bookings();list.push(b);write("sb_bookings",list);
+  pendingBooking=null;foodCart={};renderBoardingPass(b);showPage("ticket");
+}
+function renderBoardingPass(b){
+  const f=b.flight;
+  $("boardingPass").innerHTML=`<div class="boarding"><div class="board-head"><div class="flex"><b>✈ SKYBOOK AIR</b><b>DEMO BOARDING PASS</b></div><p>Reference: <b>${safe(b.ref)}</b></p></div><div class="board-body"><div class="flex"><div><span class="small">PASSENGER</span><h3>${safe(b.name)}</h3></div><div><span class="small">SEAT</span><h2>${safe(b.seat)}</h2></div></div><div class="route"><div><span class="small">FROM</span><div class="city">${safe(f.from)}</div><b>${safe(f.dep)}</b></div><div>✈ ───→</div><div><span class="small">TO</span><div class="city">${safe(f.to)}</div><b>${safe(f.arr)}</b></div></div><hr><div class="grid"><div>Flight: <b>${safe(f.no)}</b></div><div>Date: <b>${safe(f.date)}</b></div><div>Class: <b>${safe(f.travelClass)}</b></div><div>Status: <b>${safe(b.status)}</b></div></div><p>Email: ${safe(b.email)}</p><p>Total demo amount: ₹${Number(b.total).toLocaleString("en-IN")}</p><p>Food: ${b.food.length?b.food.map(x=>safe(x.name)+" × "+x.qty).join(", "):"None"}</p><p class="small">Not valid for airport travel. No airline booking was made.</p></div></div>`;
+}
+function renderTrips(){
+  const list=bookings().slice().reverse();
+  $("tripList").innerHTML=list.length?list.map(b=>`<div class="flight"><div class="flex"><b>${safe(b.ref)}</b><span class="pill">${safe(b.status)}</span></div><h3>${safe(b.flight.from)} → ${safe(b.flight.to)}</h3><p>${safe(b.flight.date)} · ${safe(b.name)}</p><p>Seat ${safe(b.seat)} · ₹${Number(b.total).toLocaleString("en-IN")}</p><button onclick="openTicket('${safe(b.ref)}')">View Boarding Pass</button> <button style="background:#b45353" onclick="cancelBooking('${safe(b.ref)}')">Cancel Demo Booking</button></div>`).join(""):"<p>No bookings yet. Search for a flight to get started.</p>";
+}
+function openTicket(ref){const b=bookings().find(x=>x.ref===ref);if(!b)return alert("Booking not found");renderBoardingPass(b);showPage("ticket")}
+function cancelBooking(ref){if(!confirm("Cancel this demo booking?"))return;const list=bookings();const b=list.find(x=>x.ref===ref);if(b)b.status="Demo Cancelled";write("sb_bookings",list);renderTrips()}
+function checkStatus(){const ref=$("statusReference").value.trim().toUpperCase();const b=bookings().find(x=>x.ref===ref);$("statusResult").innerHTML=b?`<p class="pill">${safe(b.status)}</p><p>${safe(b.flight.from)} → ${safe(b.flight.to)} on ${safe(b.flight.date)}</p>`:"<p>No matching booking found in this browser.</p>"}
+
+const foods=[
+{id:"f1",name:"Vegetarian Meal",desc:"Rice and vegetables",price:250},
+{id:"f2",name:"Sandwich Combo",desc:"Sandwich and snack",price:180},
+{id:"f3",name:"Chicken Meal",desc:"Sample chicken rice meal",price:320},
+{id:"f4",name:"Fruit Box",desc:"Fresh seasonal fruit",price:140},
+{id:"f5",name:"Coffee",desc:"Hot coffee",price:90},
+{id:"f6",name:"Juice",desc:"Fruit juice",price:80},
+{id:"f7",name:"Snack Pack",desc:"Chips and biscuits",price:120},
+{id:"f8",name:"Vegan Meal",desc:"Plant-based meal",price:260}
+];
+function renderFood(){
+  $("foodMenu").innerHTML=foods.map(f=>`<div class="menu-item"><div><b>${safe(f.name)}</b><p>${safe(f.desc)}</p><b>₹${f.price}</b></div><button onclick="addFood('${f.id}')">Add +</button></div>`).join("");
+  renderFoodCart();
+}
+function addFood(id){const f=foods.find(x=>x.id===id);if(!foodCart[id])foodCart[id]={...f,qty:0};foodCart[id].qty++;renderFoodCart()}
+function removeFood(id){if(foodCart[id])foodCart[id].qty--;if(foodCart[id]&&foodCart[id].qty<=0)delete foodCart[id];renderFoodCart()}
+function renderFoodCart(){
+  const list=Object.values(foodCart);
+  $("foodCart").innerHTML=list.length?list.map(f=>`<div class="menu-item"><span>${safe(f.name)} × ${f.qty}</span><span>₹${f.price*f.qty} <button onclick="removeFood('${f.id}')">−</button></span></div>`).join(""):"<p>Your cart is empty.</p>";
+  $("foodTotal").textContent="Total: ₹"+list.reduce((s,f)=>s+f.price*f.qty,0);
+}
+function addFoodToBooking(){if(!Object.keys(foodCart).length){alert("Add food to your cart first.");return}alert("Food has been added to your demo cart. Select a flight and continue to checkout.");showPage("search")}
+
+function registerUser(){
+  const name=$("registerName").value.trim(),email=$("registerEmail").value.trim().toLowerCase(),password=$("registerPassword").value;
+  if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||password.length<6){alert("Enter a name, valid email and demo password of at least 6 characters.");return}
+  const list=users();if(list.some(u=>u.email===email)){alert("This demo account already exists.");return}
+  list.push({name,email});write("sb_users",list);currentUser=email;$("accountMessage").textContent="Demo account created.";renderProfile();
+}
+function loginUser(){const email=$("loginEmail").value.trim().toLowerCase();const u=users().find(x=>x.email===email);if(!u){alert("Demo account not found. Register first.");return}currentUser=email;$("accountMessage").textContent="Signed in to demo profile.";renderProfile()}
+function logoutUser(){currentUser="";$("accountMessage").textContent="Logged out.";renderProfile()}
+function renderProfile(){const u=users().find(x=>x.email===currentUser);$("profileInfo").innerHTML=u?`<p><b>${safe(u.name)}</b></p><p>${safe(u.email)}</p>`:"Browsing as a guest."}
+function sendFeedback(){
+  const name=$("feedbackName").value.trim(),comment=$("feedbackText").value.trim();
+  if(!name||!comment){alert("Enter your name and feedback.");return}
+  const list=feedbackEntries();list.push({name,comment,rating:$("feedbackRating").value});write("sb_feedback",list);
+  $("feedbackMessage").textContent="Feedback saved in this browser."; $("feedbackText").value="";
+}
+function checkDocuments(){
+  const ids=["passportName","passportNumber","passportExpiry","visaCountry","visaNumber","visaExpiry","aadhaarName","aadhaarNumber"];
+  $("documentMessage").textContent=ids.filter(id=>$(id).value.trim()).length+" of "+ids.length+" fields completed. This form does not verify identity documents.";
+}
+function adminLogin(){
+  if($("adminEmail").value==="admin@skybook.com"&&$("adminPassword").value==="admin123"){
+    adminEnabled=true;$("adminDashboard").style.display="block";renderAdmin();
+  }else alert("Incorrect demo admin login.");
+}
+function renderAdmin(){
+  $("statBookings").textContent=bookings().length;$("statUsers").textContent=users().length;$("statFeedback").textContent=feedbackEntries().length;
+  $("adminReport").innerHTML=bookings().map(b=>`<div class="flight">${safe(b.ref)} · ${safe(b.name)} · ${safe(b.flight.from)} → ${safe(b.flight.to)} · ₹${b.total} · ${safe(b.status)}</div>`).join("")||"<p>No bookings yet.</p>";
+}
+function addFlight(){
+  const airline=$("newAirline").value.trim(),no=$("newFlightNo").value.trim(),from=$("newFrom").value.trim(),to=$("newTo").value.trim(),fare=Number($("newFare").value);
+  if(!airline||!no||!from||!to||from.toLowerCase()===to.toLowerCase()||fare<=0){alert("Enter valid flight details.");return}
+  flights.push({airline,no,from,to,dep:$("newDeparture").value||"10:00",arr:$("newArrival").value||"12:00",fare});
+  alert("Sample flight added.");
+}
+function safe(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+renderFood();
+renderProfile();
+</script>
+</body>
+</html>
